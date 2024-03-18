@@ -1,0 +1,8 @@
+createOrder(1001, 1, 200, 3) 
+createOrder(1002, 3, 250, 6)
+createOrder(1003, 8, 100, 3) 
+createOrder(1004, 13, 100, 5)
+print(2, 15)
+updateTime(1003, 15, 2) 
+createOrder(1005, 30, 300, 3)
+Quit()
