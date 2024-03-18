@@ -150,17 +150,16 @@ class OrderManagementSystem:
         self.priority_tree = AVLTree()
         self.eta_tree = AVLTree()
         self.orders = {}
+        self.last_delivered_order_time = 0
 
     def create_order(self, orderId, currentSystemTime, orderValue, deliveryTime):
         order = Order(orderId, currentSystemTime, orderValue, deliveryTime)
         self.orders[orderId] = order
+        self.calculate_eta(order)
         self.priority_tree.insert(order.priority, orderId)
-        order.ETA = self.calculate_eta(order)
         self.eta_tree.insert(order.ETA, orderId)
         print(f"Order {orderId} has been created - ETA: {order.ETA}")
-        self.update_etas(orderId)
         self.deliver_orders(currentSystemTime)
-
 
     def cancel_order(self, orderId, currentSystemTime):
         if orderId in self.orders:
@@ -169,8 +168,10 @@ class OrderManagementSystem:
             self.eta_tree.delete(order.ETA)
             del self.orders[orderId]
             print(f"Order {orderId} has been canceled")
-            self.update_etas(orderId)
+            self.update_etas()
             self.deliver_orders(currentSystemTime)
+        else:
+            print(f"Cannot cancel. Order {orderId} has already been delivered or does not exist.")
 
     def search_order(self, orderId):
         if orderId in self.orders:
@@ -180,42 +181,18 @@ class OrderManagementSystem:
             print("Order not found")
 
     def calculate_eta(self, order):
-        prev_order_eta = 0
-        for other_order in sorted(self.orders.values(), key=lambda o: o.priority):
-            if other_order.priority >= order.priority:
-                break
-            prev_order_eta = other_order.ETA
-        return max(order.currentSystemTime, prev_order_eta) + order.deliveryTime * 2
-    
-    def calculate_eta(self, order):
-        prev_order_eta = 0
-        for other_order in sorted(self.orders.values(), key=lambda o: o.priority):
-            if other_order.priority >= order.priority:
-                break
-            prev_order_eta = other_order.ETA
-        # Use max of currentSystemTime or prev_order_eta as the start time for this order's delivery
-        start_time_for_delivery = max(order.currentSystemTime, prev_order_eta)
-        # The delivery agent returns back to the starting point, so we add double the deliveryTime
-        if prev_order_eta == 0:
-            return start_time_for_delivery + order.deliveryTime
-        else:
-            return start_time_for_delivery + order.deliveryTime * 2
+        order.ETA = max(order.currentSystemTime, self.last_delivered_order_time) + order.deliveryTime
+        self.last_delivered_order_time = order.ETA + order.deliveryTime
 
-
-    def update_etas(self, affected_order_id):
-        affected_order_priority = self.orders[affected_order_id].priority if affected_order_id in self.orders else float('-inf')
-        updated_orders = []
-        for order_id in sorted(self.orders, key=lambda oid: self.orders[oid].priority):
-            order = self.orders[order_id]
-            if order.priority > affected_order_priority:
-                old_eta = order.ETA
-                order.ETA = self.calculate_eta(order)
-                if old_eta != order.ETA:
-                    self.eta_tree.delete(old_eta)
-                    self.eta_tree.insert(order.ETA, order_id)
-                    updated_orders.append((order_id, order.ETA))
-        if updated_orders:
-            print("Updated ETAs:", updated_orders)
+    def update_etas(self):
+        self.last_delivered_order_time = 0
+        for order in sorted(self.orders.values(), key=lambda o: o.priority):
+            old_eta = order.ETA
+            self.calculate_eta(order)
+            if old_eta != order.ETA:
+                self.eta_tree.delete(old_eta)
+                self.eta_tree.insert(order.ETA, order.orderId)
+                print(f"Updated ETA for Order {order.orderId}: {order.ETA}")
 
     def deliver_orders(self, currentSystemTime):
         delivered_orders = []
@@ -223,8 +200,9 @@ class OrderManagementSystem:
             if eta > currentSystemTime:
                 break
             order_id = self.eta_tree.search(eta)
-            print(f"Order {order_id} has been delivered at time {eta}")
-            delivered_orders.append(order_id)
+            if order_id:
+                print(f"Order {order_id} has been delivered at time {eta}")
+                delivered_orders.append(order_id)
         for order_id in delivered_orders:
             order = self.orders[order_id]
             self.eta_tree.delete(order.ETA)
@@ -249,6 +227,7 @@ class OrderManagementSystem:
             print(f"Order {orderId} will be delivered after {rank} orders")
         else:
             print("Order not found")
+
 
 def main(input_filename):
     oms = OrderManagementSystem()
