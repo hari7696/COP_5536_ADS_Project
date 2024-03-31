@@ -14,7 +14,7 @@ class Ordersystem:
 
         temp_lst = self.orders_priority.copy()
         for item in temp_lst:
-            if self.orders_dict[item]['eta'] <= self.current_system_time:
+            if self.orders_dict[item]['eta'] < self.current_system_time:
                 #deleting the key from the dictionary
                 print(f"Order {item} has been delivered at time {self.orders_dict[item]['eta']}")
                 del self.orders_dict[item]
@@ -106,7 +106,7 @@ class Ordersystem:
     def func_cancel_order(self, order_id, current_system_time):
 
         if order_id not in self.orders_dict:
-            print(f"Order {order_id} has already been delivered")
+            print(f"cannot cancel Order {order_id} has already been delivered")
 
         elif self.orders_dict[order_id]['out_for_delivery']:
             print(f"Order {order_id} is out for delivery")
@@ -126,8 +126,28 @@ class Ordersystem:
         elif self.orders_dict[order_id]['out_for_delivery']:
             print(f"Order {order_id} is out for delivery")
         elif not self.orders_dict[order_id]['out_for_delivery']:
-            self.orders_dict[order_id]['delivery_time'] = new_delivery_time
-            self.func_update_eta(-100)
+            
+            temp_old_dict = copy.deepcopy(self.orders_dict)
+            update_flg = False
+            for item in self.orders_priority:
+                if item == order_id:
+                    self.orders_dict[item]['eta'] = self.orders_dict[item]['eta'] - self.orders_dict[item]['delivery_time'] + new_delivery_time
+                    self.orders_dict[order_id]['delivery_time'] = new_delivery_time
+                    update_flg = True
+                elif update_flg:
+                    prev_order = self.orders_priority[self.orders_priority.index(item)-1]
+                    self.orders_dict[item]['eta'] = self.orders_dict[prev_order]['eta'] + self.orders_dict[prev_order]['delivery_time'] + self.orders_dict[item]['delivery_time']
+                    #self.orders_dict[item]['delivery_time'] = new_delivery_time
+            # you will just update the ETA, priorrity will remain the same
+            # self.orders_priority.sort(key=lambda x: self.orders_dict[x]['priority'], reverse=True)
+
+            lst_up_eta = []
+            for item in self.orders_priority:
+                if self.orders_dict[item]['eta'] != temp_old_dict[item]['eta']:
+                    lst_up_eta.append("{}: {}".format(item, self.orders_dict[item]['eta']))
+
+            if len(lst_up_eta) > 0:
+                print("Updated ETAs: {}".format(lst_up_eta ))
 
         self.func_print_eta()
 
@@ -166,48 +186,76 @@ class Ordersystem:
         if order_id in self.orders_priority:
             print("Order {} will be delivered after {} orders".format(order_id, self.orders_priority.index(order_id)))
         else:
-            print("Order not found")
+            #print("Order not found")
+            pass
 
     def func_deliver_remainig_orders(self):
         for item in self.orders_priority:
             print(f"Order {item} has been delivered at time {self.orders_dict[item]['eta']}")
             #del self.orders_dict[item]
-            
+
+# oms = Ordersystem()
+# oms.func_create_order(1001, 1, 200, 3)
+# oms.func_create_order(1002, 3, 250, 6)
+# oms.func_create_order(1003, 8, 100, 3)
+# oms.func_create_order(1004, 13, 100, 5)
+# oms.func_double_print(2, 15)
+# oms.func_update_time(1003, 15, 1)
+# oms.func_create_order(1005, 30, 300, 3)
+# oms.func_deliver_remainig_orders()
+
 
 def main(input_filename):
-    oms = Ordersystem()
-    with open(input_filename, 'r') as file:
-        for line in file:
-            command = line.strip().split('(')[0]
-            args = line.strip().split('(')[1][:-1].split(',')
-            print(line)
-            if len(args) > 1:
-                args = [arg.strip() for arg in args]
-            if command == "createOrder":
-                oms.func_create_order(int(args[0]), int(args[1]), int(args[2]), int(args[3]))
-            elif command == "cancelOrder":
-                oms.func_cancel_order(int(args[0]), int(args[1]))
-            elif command == "updateTime":
-                oms.func_update_time(int(args[0]), int(args[1]), int(args[1]))
 
-            elif command == "print":
-                if len(args) == 1:
-                    oms.func_single_print(int(args[0]))
-                else:
-                    oms.func_double_print(int(args[0]), int(args[1]))
-            elif command == "getRankOfOrder":
-                oms.func_get_rak_of_order(int(args[0]))
-            elif command == "Quit":
-                oms.func_deliver_remainig_orders()
-                break
+    oms =  Ordersystem()
+    with open(input_filename, 'r') as f:
+        lines = f.readlines()
+
+    for line in lines:
+        line = line.strip()
+        command, args = line.split('(')
+        args = args[:-1]
+        if len(args) > 0:
+            args = [int(item) for item in args.split(',')]
+        #print(line)
+        if command == 'createOrder':
+            oms.func_create_order(args[0], args[1], args[2], args[3])
+        elif command == 'print':
+        
+            if len(args) == 1:
+                oms.func_single_print(args[0])
             else:
-                raise ValueError("Invalid command")
-            print("\n")
+                oms.func_double_print(args[0], args[1])
+
+        elif command == 'getRankOfOrder':
+            oms.func_get_rak_of_order(args[0])
+
+        elif command == 'updateTime':
+            oms.func_update_time(args[0], args[1], args[2])
+
+        elif command == 'cancelOrder':
+            oms.func_cancel_order(args[0], args[1])
+
+        elif command == 'Quit':
+            oms.func_deliver_remainig_orders()
+
+        else:
+            raise ValueError("Invalid command")
+
 
 
 
 if __name__ == "__main__":
     import sys
-    input_filename = sys.argv[1]
+    input_filename = 'input_file2.txt'#sys.argv[1]
     main(input_filename)
 
+# oms = Ordersystem()
+# oms.func_create_order(1001, 1, 200, 3)
+# oms.func_create_order(1002, 3, 250, 6)
+# oms.func_create_order(1003, 8, 100, 3)
+# oms.func_create_order(1004, 13, 100, 5)
+# oms.func_double_print(2, 15)
+# oms.func_update_time(1003, 15, 1)
+# oms.func_create_order(1005, 30, 300, 3)
+# oms.func_deliver_remainig_orders()
