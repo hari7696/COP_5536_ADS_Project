@@ -64,10 +64,11 @@ class Ordersystem:
         for item in tmp_orders_priority:
 
             if self.orders_avl.getNode(self.orders_avl.root, item)['eta'] != temp_old_dict[item]['eta']:
-                updated_etas.append("{}: {}".format(item, self.orders_avl.getNode(self.orders_avl.root, item)['eta']))
+                updated_etas.append("{}:{}".format(item, self.orders_avl.getNode(self.orders_avl.root, item)['eta']))
         
         if len(updated_etas) > 0:
-            print("Updated ETAs: ", updated_etas )
+
+            print("Updated ETAs: [{}]".format(",".join(updated_etas )))
 
     def func_create_order(self, order_id, creation_time, order_value, delivery_time):
 
@@ -175,10 +176,10 @@ class Ordersystem:
             lst_up_eta = []
             for item in self.orders_priority:
                 if self.orders_avl.getNode(self.orders_avl.root, item)['eta'] != temp_old_dict[item]['eta']:
-                    lst_up_eta.append("{}: {}".format(item, self.orders_avl.getNode(self.orders_avl.root, item)['eta']))
+                    lst_up_eta.append("{}:{}".format(item, self.orders_avl.getNode(self.orders_avl.root, item)['eta']))
 
             if len(lst_up_eta) > 0:
-                print("Updated ETAs: {}".format(lst_up_eta ))
+                print("Updated ETAs: [{}]".format(",".join(lst_up_eta )))
 
         self.func_print_eta()
 
@@ -210,7 +211,7 @@ class Ordersystem:
     def func_single_print(self, order_id):
         if order_id in self.orders_avl.getSortedItems():
             node = self.orders_avl.getNode(self.orders_avl.root, order_id)
-            print([node['creation_time'],
+            print([order_id, node['creation_time'],
                     node['order_value'],
                       node['delivery_time'],
                          node['eta']])
@@ -219,7 +220,7 @@ class Ordersystem:
 
     def func_get_rak_of_order(self, order_id):
         if order_id in self.orders_priority:
-            print("Order {} will be delivered after {} orders".format(order_id, self.orders_priority.index(order_id)))
+            print("Order {} will be delivered after {} orders.".format(order_id, self.orders_priority.index(order_id)))
         else:
             #print("Order not found")
             pass
