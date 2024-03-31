@@ -119,7 +119,7 @@ class Ordersystem:
             self.func_check_order_deliveries()
 
             # PUSHING ORDERS FOR DELIVERY
-            if self.current_system_time > self.driver_return_time and len(self.orders_priority) >= 1:
+            if self.current_system_time >= self.driver_return_time and len(self.orders_priority) >= 1:
                 
                 node = copy.deepcopy(self.orders_avl.getNode(self.orders_avl.root, self.orders_priority[0]))
                 node['out_for_delivery'] = True
@@ -133,7 +133,7 @@ class Ordersystem:
     def func_cancel_order(self, order_id, current_system_time):
 
         if self.orders_avl.getNode(self.orders_avl.root, order_id) is None:
-            print(f"cannot cancel Order {order_id} has already been delivered")
+            print(f"Cannot cancel. Order {order_id} has already been delivered.")
 
         elif self.orders_avl.getNode(self.orders_avl.root, order_id)['out_for_delivery']:
             print(f"Order {order_id} is out for delivery")
