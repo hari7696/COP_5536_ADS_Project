@@ -6,6 +6,7 @@ class AVLNode:
         self.right = None
         self.height = 1
 
+
 class AVLTree:
     def __init__(self):
         self.root = None
@@ -125,7 +126,7 @@ class AVLTree:
         result = []
         self.inorder_traversal(self.root, result)
         return result
-    
+
 
 class Order:
     def __init__(self, orderId, currentSystemTime, orderValue, deliveryTime):
@@ -142,17 +143,22 @@ class Order:
         normalizedOrderValue = self.orderValue / 50
         return valueWeight * normalizedOrderValue - timeWeight * self.currentSystemTime
 
+
 class OrderManagementSystem:
     def __init__(self):
         self.priority_tree = AVLTree()  # Assumes AVLTree class is correctly implemented
-        self.eta_tree = AVLTree()       # Assumes AVLTree class is correctly implemented
+        self.eta_tree = AVLTree()  # Assumes AVLTree class is correctly implemented
         self.orders = {}
         self.last_delivered_order_time = 0
 
     def create_order(self, orderId, currentSystemTime, orderValue, deliveryTime):
         order = Order(orderId, currentSystemTime, orderValue, deliveryTime)
-        order.ETA = max(currentSystemTime, self.last_delivered_order_time) + deliveryTime
-        self.last_delivered_order_time = order.ETA + deliveryTime  # Consider return time
+        order.ETA = (
+            max(currentSystemTime, self.last_delivered_order_time) + deliveryTime
+        )
+        self.last_delivered_order_time = (
+            order.ETA + deliveryTime
+        )  # Consider return time
         self.orders[orderId] = order
         self.priority_tree.insert(order.priority, order)
         self.eta_tree.insert(order.ETA, order)
@@ -163,9 +169,13 @@ class OrderManagementSystem:
         if orderId in self.orders:
             order = self.orders[orderId]
             order.deliveryTime = newDeliveryTime
-            order.ETA = max(currentSystemTime, self.last_delivered_order_time) + newDeliveryTime
+            order.ETA = (
+                max(currentSystemTime, self.last_delivered_order_time) + newDeliveryTime
+            )
             self.last_delivered_order_time = order.ETA + newDeliveryTime
-            self.eta_tree.update(order.ETA, order)  # Assuming update method exists in AVLTree
+            self.eta_tree.update(
+                order.ETA, order
+            )  # Assuming update method exists in AVLTree
             print(f"Order {orderId} has been updated - ETA: {order.ETA}")
             self.deliver_orders(currentSystemTime)
         else:
@@ -191,7 +201,9 @@ class OrderManagementSystem:
             self.update_etas()
             self.deliver_orders(currentSystemTime)
         else:
-            print(f"Cannot cancel. Order {orderId} has already been delivered or does not exist.")
+            print(
+                f"Cannot cancel. Order {orderId} has already been delivered or does not exist."
+            )
 
     def search_order(self, orderId):
         if orderId in self.orders:
@@ -210,7 +222,6 @@ class OrderManagementSystem:
         # Update the last_delivered_order_time to the ETA of the new order
         self.last_delivered_order_time = order.ETA
 
-
     def update_etas(self):
         self.last_delivered_order_time = 0
         for order in sorted(self.orders.values(), key=lambda o: o.priority):
@@ -222,7 +233,11 @@ class OrderManagementSystem:
                 print(f"Updated ETA for Order {order.orderId}: {order.ETA}")
 
     def print_orders_in_range(self, time1, time2):
-        orders_in_range = [order_id for order_id in self.orders if time1 <= self.orders[order_id].ETA <= time2]
+        orders_in_range = [
+            order_id
+            for order_id in self.orders
+            if time1 <= self.orders[order_id].ETA <= time2
+        ]
         if orders_in_range:
             print(orders_in_range)
         else:
@@ -243,10 +258,10 @@ class OrderManagementSystem:
 
 def main(input_filename):
     oms = OrderManagementSystem()
-    with open(input_filename, 'r') as file:
+    with open(input_filename, "r") as file:
         for line in file:
-            command = line.strip().split('(')[0]
-            args = line.strip().split('(')[1][:-1].split(',')
+            command = line.strip().split("(")[0]
+            args = line.strip().split("(")[1][:-1].split(",")
             if len(args) > 1:
                 args = [arg.strip() for arg in args]
             if command == "createOrder":
@@ -264,8 +279,8 @@ def main(input_filename):
                 break
 
 
-
 if __name__ == "__main__":
     import sys
+
     input_filename = sys.argv[1]
     main(input_filename)
