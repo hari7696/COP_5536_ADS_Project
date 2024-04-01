@@ -517,8 +517,8 @@ if __name__ == "__main__":
 
     # print(sys.argv)
     input_file_name = sys.argv[1]
-    output_file = sys.argv[2]
-    new_output_file = input_file_name.rstrip(".txt") + "_" + output_file
+    # output_file = sys.argv[2]
+    new_output_file = input_file_name.rstrip(".txt") + "_output_file.txt"
     main(input_file_name, new_output_file)
 
 # oms = Ordersystem()
