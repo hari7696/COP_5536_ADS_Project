@@ -1,4 +1,11 @@
 class TreeNode:
+    """
+        Initialize a tree node.
+
+        Args:
+            key: The key associated with the node.
+            val: The value associated with the key.
+    """
     def __init__(self, key, val):
         self.key = key
         self.val = val
@@ -8,9 +15,26 @@ class TreeNode:
 
 class AVLTree:
     def __init__(self):
+
+        """
+        Initialize an AVL tree.
+        """
         self.root = None
 
     def insert(self, root, key, val):
+
+        """
+        Insert a key-value pair into the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+            key: The key to insert.
+            val: The value associated with the key.
+
+        Returns:
+            The root of the modified AVL tree.
+        """
+        
         if not root:
             return TreeNode(key, val)
         elif key < root.key:
@@ -42,6 +66,17 @@ class AVLTree:
         return root
 
     def delete(self, root, key):
+
+        """
+        Delete a key from the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+            key: The key to delete.
+
+        Returns:
+            The root of the modified AVL tree.
+        """
         if not root:
             return root
 
@@ -91,6 +126,16 @@ class AVLTree:
         return root
 
     def leftRotate(self, z):
+
+        """
+        Perform a left rotation on the AVL tree.
+
+        Args:
+            z: The node around which the left rotation is performed.
+
+        Returns:
+            The new root after the left rotation.
+        """
         y = z.right
         T2 = y.left
 
@@ -103,6 +148,15 @@ class AVLTree:
         return y
 
     def rightRotate(self, y):
+        """
+        Perform a right rotation on the AVL tree.
+
+        Args:
+            y: The node around which the right rotation is performed.
+
+        Returns:
+            The new root after the right rotation.
+        """
         x = y.left
         T2 = x.right
 
@@ -115,21 +169,54 @@ class AVLTree:
         return x
 
     def getHeight(self, root):
+        """
+        Get the height of a node in the AVL tree.
+
+        Args:
+            root: The node whose height is to be determined.
+
+        Returns:
+            The height of the node.
+        """
         if not root:
             return 0
         return root.height
 
     def getBalance(self, root):
+        """
+        Get the balance factor of a node in the AVL tree.
+
+        Args:
+            root: The node whose balance factor is to be determined.
+
+        Returns:
+            The balance factor of the node.
+        """
         if not root:
             return 0
         return self.getHeight(root.left) - self.getHeight(root.right)
 
     def getMinValueNode(self, root):
+        """
+        Get the node with the minimum key in the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+
+        Returns:
+            The node with the minimum key.
+        """
         if root is None or root.left is None:
             return root
         return self.getMinValueNode(root.left)
 
     def preOrder(self, root):
+        """
+        Perform a pre-order traversal of the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+        """
         if not root:
             return
         print("{0} ".format(root.key), end="")
@@ -137,6 +224,16 @@ class AVLTree:
         self.preOrder(root.right)
 
     def inOrder(self, root, result=None):
+        """
+        Perform an in-order traversal of the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+            result: A list to store the traversal result.
+
+        Returns:
+            A dictionary of key-value pairs in sorted order.
+        """
         if result is None:
             result = []
         if root:
@@ -151,9 +248,25 @@ class AVLTree:
 
 
     def getSortedItems(self):
+        """
+        Get all key-value pairs in the AVL tree in sorted order.
+
+        Returns:
+            A dictionary of key-value pairs in sorted order.
+        """
         return self.inOrder(self.root)
     
     def getNode(self, root, key):
+        """
+        Retrieve a value by its key in the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+            key: The key of the value to retrieve.
+
+        Returns:
+            The value associated with the key, or None if the key is not found.
+        """
         if root is None:
             return None
         if key < root.key:
@@ -164,6 +277,17 @@ class AVLTree:
             return root.val
         
     def update(self, root, key, new_val):
+        """
+        Update the value of a key in the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+            key: The key whose value is to be updated.
+            new_val: The new value to be associated with the key.
+
+        Returns:
+            The root of the modified AVL tree.
+        """
         if not root:
             return None
         if key < root.key:
@@ -175,6 +299,16 @@ class AVLTree:
         return root
     
     def reverseInOrder(self, root, result=None):
+        """
+        Perform a reverse in-order traversal of the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+            result: A list to store the traversal result.
+
+        Returns:
+            A list of key-value pairs in reverse sorted order.
+        """
         if result is None:
             result = []
         if root:
@@ -185,6 +319,12 @@ class AVLTree:
 
 
     def getReverseSortedItems(self):
+        """
+        Get all key-value pairs in the AVL tree in reverse sorted order.
+
+        Returns:
+            A dictionary of key-value pairs in reverse sorted order.
+        """
         sorted_items = self.reverseInOrder(self.root)
         dict_temp = {}
         for item in sorted_items:
@@ -192,11 +332,27 @@ class AVLTree:
         return dict_temp
     
     def countNodes(self, root):
+        """
+        Count the number of nodes in the AVL tree.
+
+        Args:
+            root: The root node of the AVL tree.
+
+        Returns:
+            The number of nodes in the AVL tree.
+        """
+
         if not root:
             return 0
         return 1 + self.countNodes(root.left) + self.countNodes(root.right)
 
     def getNumberOfNodes(self):
+        """
+        Get the total number of nodes in the AVL tree.
+
+        Returns:
+            The total number of nodes in the AVL tree.
+        """
         return self.countNodes(self.root)
 
 if __name__ == "__main__":
