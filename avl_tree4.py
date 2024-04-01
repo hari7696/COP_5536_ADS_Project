@@ -173,13 +173,40 @@ class AVLTree:
         else:
             root.val = new_val
         return root
+    
+    def reverseInOrder(self, root, result=None):
+        if result is None:
+            result = []
+        if root:
+            self.reverseInOrder(root.right, result)
+            result.append((root.key, root.val))
+            self.reverseInOrder(root.left, result)
+        return result
+
+
+    def getReverseSortedItems(self):
+        sorted_items = self.reverseInOrder(self.root)
+        dict_temp = {}
+        for item in sorted_items:
+            dict_temp[item[0]] = item[1]    
+        return dict_temp
+    
+    def countNodes(self, root):
+        if not root:
+            return 0
+        return 1 + self.countNodes(root.left) + self.countNodes(root.right)
+
+    def getNumberOfNodes(self):
+        return self.countNodes(self.root)
 
 if __name__ == "__main__":
     # Driver code
-    # avl = AVLTree()
-    # avl.root = avl.insert(avl.root, 10, "Value 10")
-    # avl.root = avl.insert(avl.root, 20, "Value 20")
-    # avl.root = avl.insert(avl.root, 30, "Value 30")
+    avl = AVLTree()
+    avl.root = avl.insert(avl.root, 0.58, "Value 10")
+    avl.root = avl.insert(avl.root, -2, "Value 20")
+    avl.root = avl.insert(avl.root, -8, "Value 30")
+
+    avl.root = avl.delete(avl.root, 0.58)
     # avl.root = avl.insert(avl.root, 40, "Value 40")
     # avl.root = avl.insert(avl.root, 50, "Value 50")
     # avl.root = avl.insert(avl.root, 25, "Value 25")
@@ -187,7 +214,8 @@ if __name__ == "__main__":
     # print("Preorder traversal of the constructed AVL tree is")
     # avl.preOrder(avl.root)
     # print("\nSorted items in the AVL tree are")
-    # print(avl.getSortedItems())
+    print(avl.getNumberOfNodes())
+    print(avl.getSortedItems())
 
     # avl.root = avl.delete(avl.root, 20)
     # print("\nAfter deletion of 20")

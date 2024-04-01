@@ -5,27 +5,33 @@ class Ordersystem:
 
     def __init__(self):
         #self.orders_dict = {}
-        self.orders_priority = []
+        self.priority_avl = AVLTree()
+        self.orders_avl = AVLTree()
+        #self.orders_priority = []
         self.current_system_time = 0
         self.first_order = True
         self.driver_return_time = 0
         self.last_order_eta = 0
-        self.orders_avl = AVLTree()
+        
 
     def func_check_order_deliveries(self):
 
-        temp_lst = self.orders_priority.copy()
+        temp_lst_dict = self.priority_avl.getReverseSortedItems()
+        temp_lst = list(temp_lst_dict.values())
         for item in temp_lst:
             
             if self.orders_avl.getNode(self.orders_avl.root, item)['eta'] < self.current_system_time:
                 #deleting the key from the dictionary
                 print(f"Order {item} has been delivered at time {self.orders_avl.getNode(self.orders_avl.root, item)['eta']}")
                 self.orders_avl.root = self.orders_avl.delete(self.orders_avl.root, item)
-                self.orders_priority.remove(item)
+                self.priority_avl.root = self.priority_avl.delete(self.priority_avl.root, list(temp_lst_dict.keys())[list(temp_lst_dict.values()).index(item)])
 
     def func_update_eta(self, order_id):
 
-        tmp_orders_priority = self.orders_priority.copy()
+        #tmp_orders_priority_dict = 
+        # sorted dictionary given by avl tree, gaurantted upto 10k keys then best effort
+        #wierd = self.priority_avl.getReverseSortedItems()
+        tmp_orders_priority = list(self.priority_avl.getReverseSortedItems().values())
         for item in tmp_orders_priority:
             if self.orders_avl.getNode(self.orders_avl.root, item)['out_for_delivery']:
                 tmp_orders_priority.remove(item)
@@ -73,7 +79,7 @@ class Ordersystem:
     def func_create_order(self, order_id, creation_time, order_value, delivery_time):
 
         self.current_system_time = creation_time        
-        priority = 0.3 * (order_value / 50) - 0.7 * creation_time
+        priority = round(0.3 * (order_value / 50) - 0.7 * creation_time, 4)
 
         if self.first_order:
             self.first_order = False
@@ -90,8 +96,9 @@ class Ordersystem:
                                 'eta': eta, 
                                 'out_for_delivery': out_for_delivery}
             
+            self.priority_avl.root = self.priority_avl.insert(self.priority_avl.root, priority, order_id)
             self.orders_avl.root = self.orders_avl.insert(self.orders_avl.root, order_id, new_value)
-            self.orders_priority.append(order_id)
+            
             #temp = self.orders_avl.getSortedItems()
             
 
@@ -101,6 +108,7 @@ class Ordersystem:
             eta = -100#max(creation_time , last_order_eta) + 1
             out_for_delivery = False
 
+
             new_value = {'creation_time': creation_time, 
                                 'order_value': order_value, 
                                 'delivery_time': delivery_time, 
@@ -109,23 +117,24 @@ class Ordersystem:
                                 'out_for_delivery': out_for_delivery}
             
             self.orders_avl.root = self.orders_avl.insert(self.orders_avl.root, order_id, new_value)
-            self.orders_priority.append(order_id)
+            self.priority_avl.root = self.priority_avl.insert(self.priority_avl.root, priority, order_id)
             
             # queue all orders untill the driver returns
             #temp = self.orders_avl.getSortedItems()
-            self.orders_priority.sort(key=lambda x: self.orders_avl.getSortedItems()[x]['priority'], reverse=True)
+            #self.orders_priority.sort(key=lambda x: self.orders_avl.getSortedItems()[x]['priority'], reverse=True)
             self.func_update_eta(order_id)
             
             self.func_check_order_deliveries()
 
             # PUSHING ORDERS FOR DELIVERY
-            if self.current_system_time >= self.driver_return_time and len(self.orders_priority) >= 1:
+            if self.current_system_time >= self.driver_return_time and self.priority_avl.getNumberOfNodes() >= 1:
                 
-                node = copy.deepcopy(self.orders_avl.getNode(self.orders_avl.root, self.orders_priority[0]))
+                next_order = list(self.priority_avl.getReverseSortedItems().values())[0]
+                node = copy.deepcopy(self.orders_avl.getNode(self.orders_avl.root, next_order))
                 node['out_for_delivery'] = True
                 self.driver_return_time = node['eta'] + node['delivery_time']
                 self.last_order_eta = node['eta']
-                self.orders_avl.root = self.orders_avl.update(self.orders_avl.root, self.orders_priority[0], node)
+                self.orders_avl.root = self.orders_avl.update(self.orders_avl.root, next_order, node)
 
         #print ETAs of all orders
         self.func_print_eta()
@@ -141,7 +150,9 @@ class Ordersystem:
         elif not self.orders_avl.getNode(self.orders_avl.root, order_id)['out_for_delivery']:
             print(f"Order {order_id} has been canceled")
             self.orders_avl.root = self.orders_avl.delete(self.orders_avl.root, order_id)
-            self.orders_priority.remove(order_id)
+
+            temp_orders_dict = self.priority_avl.getReverseSortedItems()
+            self.priority_avl.root = self.priority_avl.delete(self.priority_avl.root, list(temp_orders_dict.keys())[list(temp_orders_dict.values()).index(order_id)] )
             self.func_update_eta(-100)
 
         self.func_print_eta()
@@ -156,7 +167,10 @@ class Ordersystem:
             
             temp_old_dict = copy.deepcopy(self.orders_avl.getSortedItems())
             update_flg = False
-            for item in self.orders_priority:
+
+            orders_priority = list(self.priority_avl.getReverseSortedItems().values())
+
+            for item in orders_priority:
                 if item == order_id:
                     node = copy.deepcopy(self.orders_avl.getNode(self.orders_avl.root, item))
                     node['eta'] = node['eta'] - node['delivery_time'] + new_delivery_time
@@ -164,7 +178,7 @@ class Ordersystem:
                     self.orders_avl.root = self.orders_avl.update(self.orders_avl.root, item, node)
                     update_flg = True
                 elif update_flg:
-                    prev_order = self.orders_priority[self.orders_priority.index(item)-1]
+                    prev_order = orders_priority[orders_priority.index(item)-1]
                     prev_node = self.orders_avl.getNode(self.orders_avl.root, prev_order)
                     current_node = copy.deepcopy(self.orders_avl.getNode(self.orders_avl.root, item))
                     current_node['eta'] = prev_node['eta'] + prev_node['delivery_time'] + current_node['delivery_time']
@@ -174,7 +188,7 @@ class Ordersystem:
             # self.orders_priority.sort(key=lambda x: self.orders_dict[x]['priority'], reverse=True)
 
             lst_up_eta = []
-            for item in self.orders_priority:
+            for item in orders_priority:
                 if self.orders_avl.getNode(self.orders_avl.root, item)['eta'] != temp_old_dict[item]['eta']:
                     lst_up_eta.append("{}:{}".format(item, self.orders_avl.getNode(self.orders_avl.root, item)['eta']))
 
@@ -185,7 +199,7 @@ class Ordersystem:
 
     def func_double_print(self, time1, time2):
         temp = []
-        for item in self.orders_priority:
+        for item in self.priority_avl.getReverseSortedItems().values():
             node = self.orders_avl.getNode(self.orders_avl.root, item)
             if node['eta'] >= time1 and node['eta'] <= time2:
                 temp.append(item)
@@ -219,27 +233,20 @@ class Ordersystem:
             print("dude you have the deleted the info")
 
     def func_get_rak_of_order(self, order_id):
-        if order_id in self.orders_priority:
-            print("Order {} will be delivered after {} orders.".format(order_id, self.orders_priority.index(order_id)))
+        lst_orders = list(self.priority_avl.getReverseSortedItems().values())
+        if order_id in lst_orders:
+            print("Order {} will be delivered after {} orders.".format(order_id, lst_orders.index(order_id)))
         else:
             #print("Order not found")
             pass
 
     def func_deliver_remainig_orders(self):
-        for item in self.orders_priority:
+        lst_orders = list(self.priority_avl.getReverseSortedItems().values())
+        for item in lst_orders:
             print(f"Order {item} has been delivered at time {self.orders_avl.getNode(self.orders_avl.root, item)['eta']}")
             #del self.orders_dict[item]
 
-# oms = Ordersystem()
-# oms.func_create_order(101, 2, 300, 4)
-# oms.func_create_order(102, 3, 600, 3)
-# oms.func_single_print(101)
-# oms.func_create_order(103, 7, 200, 2)
-# oms.func_create_order(104, 8, 500, 3)
-# oms.func_cancel_order(102, 9)
-# oms.func_create_order(105, 10, 300, 4)
-# oms.func_get_rak_of_order(105)
-# oms.func_deliver_remainig_orders()
+
 
 
 def main(input_filename):
@@ -295,4 +302,15 @@ if __name__ == "__main__":
 # oms.func_double_print(2, 15)
 # oms.func_update_time(1003, 15, 1)
 # oms.func_create_order(1005, 30, 300, 3)
+# oms.func_deliver_remainig_orders()
+    
+# oms = Ordersystem()
+# oms.func_create_order(101, 2, 300, 4)
+# oms.func_create_order(102, 3, 600, 3)
+# oms.func_single_print(101)
+# oms.func_create_order(103, 7, 200, 2)
+# oms.func_create_order(104, 8, 500, 3)
+# oms.func_cancel_order(102, 9)
+# oms.func_create_order(105, 10, 300, 4)
+# oms.func_get_rak_of_order(105)
 # oms.func_deliver_remainig_orders()
