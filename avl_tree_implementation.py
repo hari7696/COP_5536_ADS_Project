@@ -1,11 +1,12 @@
 class TreeNode:
     """
-        Initialize a tree node.
+    Initialize a tree node.
 
-        Args:
-            key: The key associated with the node.
-            val: The value associated with the key.
+    Args:
+        key: The key associated with the node.
+        val: The value associated with the key.
     """
+
     def __init__(self, key, val):
         self.key = key
         self.val = val
@@ -13,16 +14,15 @@ class TreeNode:
         self.right = None
         self.height = 1
 
+
 class AVLTree:
     def __init__(self):
-
         """
         Initialize an AVL tree.
         """
         self.root = None
 
     def insert(self, root, key, val):
-
         """
         Insert a key-value pair into the AVL tree.
 
@@ -34,7 +34,7 @@ class AVLTree:
         Returns:
             The root of the modified AVL tree.
         """
-        
+
         if not root:
             return TreeNode(key, val)
         elif key < root.key:
@@ -66,7 +66,6 @@ class AVLTree:
         return root
 
     def delete(self, root, key):
-
         """
         Delete a key from the AVL tree.
 
@@ -126,7 +125,6 @@ class AVLTree:
         return root
 
     def leftRotate(self, z):
-
         """
         Perform a left rotation on the AVL tree.
 
@@ -246,7 +244,6 @@ class AVLTree:
             temp_dict[item[0]] = item[1]
         return temp_dict
 
-
     def getSortedItems(self):
         """
         Get all key-value pairs in the AVL tree in sorted order.
@@ -255,7 +252,7 @@ class AVLTree:
             A dictionary of key-value pairs in sorted order.
         """
         return self.inOrder(self.root)
-    
+
     def getNode(self, root, key):
         """
         Retrieve a value by its key in the AVL tree.
@@ -275,7 +272,7 @@ class AVLTree:
             return self.getNode(root.right, key)
         else:
             return root.val
-        
+
     def update(self, root, key, new_val):
         """
         Update the value of a key in the AVL tree.
@@ -297,7 +294,7 @@ class AVLTree:
         else:
             root.val = new_val
         return root
-    
+
     def reverseInOrder(self, root, result=None):
         """
         Perform a reverse in-order traversal of the AVL tree.
@@ -317,7 +314,6 @@ class AVLTree:
             self.reverseInOrder(root.left, result)
         return result
 
-
     def getReverseSortedItems(self):
         """
         Get all key-value pairs in the AVL tree in reverse sorted order.
@@ -328,9 +324,9 @@ class AVLTree:
         sorted_items = self.reverseInOrder(self.root)
         dict_temp = {}
         for item in sorted_items:
-            dict_temp[item[0]] = item[1]    
+            dict_temp[item[0]] = item[1]
         return dict_temp
-    
+
     def countNodes(self, root):
         """
         Count the number of nodes in the AVL tree.
@@ -355,6 +351,7 @@ class AVLTree:
         """
         return self.countNodes(self.root)
 
+
 if __name__ == "__main__":
     # Driver code
     avl = AVLTree()
@@ -378,16 +375,15 @@ if __name__ == "__main__":
     # print("Preorder traversal of the constructed AVL tree is")
     # avl.preOrder(avl.root)
     # print("\nSorted items in the AVL tree are")
-    #print(avl.getSortedItems())
+    # print(avl.getSortedItems())
 
-    # avl = AVLTree()   
+    # avl = AVLTree()
     # avl.root = avl.insert(avl.root, 10, {"name": "Alice", "age": 30})
     # avl.root = avl.insert(avl.root, 20, {"name": "Bob", "age": 25})
     # avl.root = avl.insert(avl.root, 30, {"name": "Charlie", "age": 35})
 
     # # Printing the sorted items
     # print("\nSorted items in the AVL tree are")
-
 
     # new_value = {"name": "Bob", "age": 26}
     # avl.root = avl.insert(avl.root, 20, new_value)
